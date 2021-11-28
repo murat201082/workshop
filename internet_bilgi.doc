@@ -1,0 +1,357 @@
+4. Dosya ve Dizin İşlemleri
+Tıpkı MS-DOS'ta olduğu gibi Linux dosya yapısının da hiyerarşik bir yapıya sahip olduğunu söylemiştik. Temel dosya bilgisi önceki konularda anlatıldığından burada sadece dosya ve dizinlerle ilgili özelliklere değinilecektir.
+
+4.1 Erişim Hakları
+Erişim hakları, Linux dosya sistemi güvenliğinin belkemiğini oluşturur. Her dosyaya ayrı verilebilen erişim izinleri sayesinde çok daha rahat bir sistem yönetimi gerçekleştirilebilir. Bu, konuya sadece sistem görevlisi tarafından yaklaşıldığı zaman çıkartılabilecek bir sonuçtur. Kullanıcı bazında erişim hakları bazen daha da anlamlı olabilir. Yanlış kullanıldığında hoş olmayan süprizlere yol açabilir. Linux altında üç çeşit erişim hakkı vardır :
+
+Okuma izni : Dosyanın okuma izni varsa içeriği görülebilir, dizinin okuma izni varsa içerdiği dosyaların listesi alınabilir.
+Yazma izni : Dosyanın yazma izni varsa dosyayı değiştirebilir veya silebilirsiniz. Dizine yazma izni verildiğinde dizin altındaki dosyalar yazılabilir veya silinebilir.
+Çalıştırma izni : Dosyayı çalıştırma hakkını verir.
+Bir dosya veya dizin ilk yaratıldığı anda Linux tarafından öntanımlı bazı izinler verilir. Genellikle bu izin çalıştırma ve okumadır. Dosyanın oluşma anında verilen izini değiştirmek için erişim yetki kalıbı olarak da bilinen umask komutu kullanılır. Daha fazla bilgi için komuta ait man dosyasına bakın.
+
+Erişim haklarının dışında bir dosyanın üç izin düzeyi daha vardır. Bunlar, dosyanın sahibi, dosyanın grubu ve diğer kullanıcılardır. Dosyanın sahibi, o dosyayı oluşturan kişidir. Her kullanıcının bir grubu da olduğu için, dosya oluşturulurken kullanıcı hangi grupta ise dosya da o gruba ait olacaktır. Dosyanın sahibi olmayan ve grubu da dosyanın grubuyla uyuşmayan sistemdeki kullanıcılar ``diğer'' sınıfına girerler. Gruplar hakkında daha fazla bilgi için Linux Sistem Yönetimi konusuna bakın.
+
+Dosya İzinlerinin Değiştirilmesi
+Dosya izin bilgilerini görebilmek için ls komutu, -l parametresiyle kullanılır. Aşağıdaki dosya üzerindeki erişim haklarına göz atalım :
+
+-rwxr-xr-x   2 gorkem   users          182 Feb 12 03:58 deneme
+Dosya bilgisinin en sol kısmında izin hakları yeralır. En baştaki ``-'' işareti bunun düz dosya olduğunu belirtir. ``gorkem'', dosyanın sahibi; ``users'' ise grubudur. Ardından sırayla uzunluk, son değiştirilme tarihi ve dosya ismi gibi bilgiler gelir. Son harf kümesine dosyanın modu da denir.
+
+Solda yeralan r,w ve x karakterleri sırayla okuma, çalıştırma ve yazma haklarını belirtir. En soldaki ``-'' işaretini ayırdığımız zaman geri kalan harfleri üç adet üçlü grup haline getirelim:
+
+rwx     r-x    r-x
+Sırayla birinci harf kümesi dosya sahibinin izinlerini, ikinci harf kümesi grup izinleri ve son küme de diğer kullanıcıların izinlerini belirtir. Buna göre yukarıdaki dosyada
+
+rwx : kullanıcı okuyabilir, yazabilir, çalıştırabilir
+r-x : grup okuyabilir, çalıştırabilir fakat yazamaz.
+r-x : diğerleri okuyabilir, çalıştırabilir fakat yazamaz.
+Sol baştaki karakter ``d'' olsaydı, bir dizini inceliyor olacaktık.
+
+Dosyanın izinlerini değiştirmek için chmod komutu kullanılır. Bu komutu kullanırken hangi izin düzeyine (kullanıcı, grup veya diğerleri) hangi izinlerin verileceği veya kaldırılacağı yazılır.
+
+Örnek olarak yukarıdaki dosyanın okuma iznini kaldırmak için
+
+$ chmod -r deneme 
+kullanılabilir. "-" işareti, iznin kaldırılacağını belirtir. İzin vermek için ise "+" yazın. Dosyanın yeni görüntüsü şöyle olur :
+
+--wx--x--x   2 gorkem   users          182 Feb 12 03:58 deneme
+Sadece grubun, sadece kullanıcının veya sadece diğerlerinin erişim hakkını değiştirebilmek için her izin düzeyi için bir harf tanımlanmıştır. Kullanıcı için "u", grup için "g" ve diğerleri için "o" yazarak belirli bir izin düzeyi için erişim hakkını değiştirmek mümkün olur. Bu üç harf, izinden hemen önce yazılır.
+
+$ chmod u+x deneme              (dosyanin sahibi calistirabilir)
+$ chmod o+r t2sac               (digerleri okuyabilir)
+$ chmod g-w deneme              (dosyanin grubu yazamaz)
+Her izin için aynı zamanda sayılar da tanımlanmıştır. Dosyanın erişim izinlerinideğiştirmek için her izne ait sayıları kullanabilirsiniz. Aşağıdaki tabloda, her izin düzeyi (dosyanın sahibi, grubu ve diğerleri) için üçer tane olmak üzere toplam 9 sayıdan oluşan izin numaralarını görebilirsiniz. Bir izni vermek için sırayla numaraları toplayın. Örneğin sahibinin okuması (400), yazması (200), çalıştırması (100), grubun okuması (40), çalıştırması (10) ve diğerlerinin okuması (4) ve çalıştırması (1) için kullanılan rakamların toplamı 755'tir.
+
+$ chmod 755 deneme
+
+400 sahibi okur
+200 sahibi yazar
+100 sahibi çalıştırır
+040 grubu okur
+020 grubu yazar
+010 grubu çalıştırır
+004 diğerleri okur
+002 diğerleri yazar
+001 diğerleri çalıştırır
+Başka bir değişiklikle konuyu pekiştirelim. Sahibinin okuması (400), yazması (100), grubun okuması (40), diğerlerinin okuması (4) için izin numarasını bulmak için bu cümlede parantez içinde yeralan sayıları toplarsak 644 yapacaktır.
+
+$ chmod 644 deneme
+Aynen dosyalarda olduğu gibi, bir dizinin de sahibi ve grubu vardır.
+
+4.2 Dosyanın Sahibinin ve Grubunun Değiştirilmesi
+Bir dosyanın sahibini sadece sistemdeki root kullanıcı değiştirebilme yetkisine sahiptir. Dosya sahibinin değiştirilmesi için chown komutu kullanılabilir. Yukarıdaki dosyanın sahibini ozgur isimli kullanıcı yapalım.
+
+# chown ozgur deneme 
+Dosyanın yeni hali şöyle olur :
+
+-rwxr-xr-x   2 ozgur   users          182 Feb 12 03:58 deneme
+chgrp komutu yardımıyla da dosyanın grubunu değiştirilebilir. Yukarıdaki dosyanın grubunu www yapmak için
+
+# chgrp www deneme 
+komutu kullanılabilir. chown komutu, dosyanın hem kullanıcısını, hem de grubunu değiştirme özelliğine sahiptir. chown komutundan sonra kullanıcı ve grup isimlerini aralarında bir nokta kalacak şekilde yazın.
+
+$ chown ozgur.www deneme 
+$ ls -l deneme
+-rwxr-xr-x   2 ozgur   www          182 Feb 12 03:58 deneme
+4.3 Diğer Dosya Sistemlerinin Kullanılması
+Bir Linux işletim sisteminde dosyaların ve dizinlerin herbirisi sabit disk, CDROM veya diğer bilgi saklamaya yarayan cihazların birer parçası olan "dosya sistemlerinde" tutulur. Linux'un desteklediği pek çok dosya sistemi vardır ve bunların her birisinin veri depolarken kullandıkları yöntem birbirinden farklıdır.
+
+Linux'ta her dosya sistemi farklı bir dizinde tutulur ve bu dizinlerin bilgisi /etc/fstab dosyasında yeralır. Açılış anında bu dosyada hangi dosya sistemlerinin hangi dizinler altına yerleştirileceği okunur ve buna göre makina açılır. Linux, kendisi için özel olarak geliştirilen ext2 dosya sistemini kullanır.
+
+Bir sistem görevlisi olarak çeşitli dosya sistemlerini tanımalı, bu dosya sistemleri üzerinde hata oluşması durumunda zararı en aza indirecek yolu bilmelisiniz. Bilgisayar başında geçireceğiniz zamanınızın büyük bir bölümünü dosya sistemleri üzerinde harcayacaksınız.
+
+mount İşlemi
+Bir dosya sisteminin kullanılabilmesi için boş bir dizin altına yerleştirilmesi gerekir. Ancak bu gerçekleştirilirse sözkonusu dosya sistemini oluşturan dosyalar üzerinde işlem yapılabilir. Bu işlem mount komutu yardımıyla yapılır.
+
+mount komutunun şu şekilde kullanılır :
+
+mount -t <tip> <nereye> <aygit>
+tip : Dosya sistemi çeşidi. Örnek dosya sistem çeşitleri arasında ext2, minix, msdos sayılabilir. Dosya sistemleri hakkında daha geniş bilgi için Çekirdek konfigürasyonu konusuna bakın. Genellikle mount programı ne tür bir diske eriştiğini otomatik olarak anlayacaktır.
+
+nereye : mount edilecek dosya sistemi hangi dizin altına yerleştirileceğini belirtir.
+
+aygıt : Üzerinde dosya sisteminin bulunduğu sabit disk, CD-ROM benzeri aygıt.
+
+Linux'a bağlı olan tüm donanımlara ait bir giriş, /dev dizini altında bulunur. Bu dizin altındaki dosyalar özel olarak tanımlanmıştır ve bunlara kısaca "düğüm" adı verilir. Örneğin /dev/hda2, birinci IDE sabit diskin ikinci bölümünü; /dev/tty1 ise birinci sanal konsolu gösterir.
+
+Çeşitli sabit disklere ait /dev düğümleri, Linux Kurulumu bölümünde detaylı olarak anlatılmıştı. mount programı bu düğümlere ihtiyaç duyacaktır. Bu yüzden bir dosya sistemini erişilebilir hale getirebilmek için hangi düğüm ismine sahip olduğunu bilmelisiniz. Örnek olarak CD-ROM için /dev/cdrom, birinci disket sürücü için /dev/fd0 gibi.
+
+CD-ROM sürücüsünü /mnt altına mount etmek için
+
+# mount -t iso9660 /dev/cdrom /mnt 
+yazın. Eğer çekirdekte CD-ROM dosya sistemi desteği varsa ve sistem açılırken çekirdek CD-ROM'u tanımışsa /mnt dizini altına CD'deki dosya sistemi yerleştirilir. Buna benzer şekilde MS-DOS disket içeren disket sürücüyü ve üzerinde ext2 dosya sistemi bulunan ikinci IDE sabit diskin birinci bölümünü sırasıyla /mnt/disket ve /mnt/disk dizinlerine bindirmek için
+
+# mount -t msdos /dev/fd0 /mnt/disket
+ve
+
+# mount -t ext2 /dev/hdb1 /mnt/disk
+yazılabilir. Bir mount işleminin tersini yapmak ve dosya sistemini erişilemez kılmak için umount komutu kullanılır. /disk altındaki /dev/hdb1 sabit disk bölümünü umount etmek için
+
+# umount /disk
+veya
+
+# umount /dev/hdb1
+kullanılır. Her iki yazım şekli de kabul edilir. Son olarak o an sistemde bindirilmiş halde bulunan tüm dosya sistemlerini görmek için mount komutunu parametresiz yazın. Bu komut hakkında daha detaylı bilgi ve aldığı diğer parametreler için man sayfasına bakın.
+
+mount ve umount komutları ile bir dizin yapısını disk üzerinde konumlandırırken veya ayırırken üzerinde işlem yapılan dizinde bulunmamanız, ya da o dizinde başka bir süreç çalışıyor olmaması gereklidir. Aksi takdirde aşağıdaki hata mesajını alırsınız:
+
+# pwd
+/disk
+# umount /disk
+umount: /dev/hdb1: device is busy
+Yapmanız gereken, ayıracağınız dizinden dışarı çıkıp tekrar denemek. Diğer bir seçenek de fuser komutunu kullanmak. Bu komut, ayırmak istediğiniz dizini kullanan tüm süreçleri ekranda gösterir. Böylelikle rahatlıkla yukarıdaki örnekteki gibi umount işlemini gerçekleştirebilirsiniz. fuser komutunun -km seçeneğiyle o dizini kullanan süreçleri öldürülebilir.
+
+# cd /
+# fuser /disk
+/disk:                   78c
+# fuser -km /disk
+# umount /disk
+fuser komutunu kullanırken dikkatli olun, zira sistemi kilitlenme noktasına getirebilirsiniz.
+
+Dosya Sistemi Bilgileri
+Linux açılırken mount komutu yardımıyla root dosya sistemine ekleyeceği her değişik dosya sistemini /etc/fstab dosyasından okur ve işleme koyar. Aşağıda örnek bir fstab dosyası yeralıyor.
+
+/dev/hda2       /               ext2            defaults  1 1
+/swap           none            swap            defaults  1 1
+/dev/cdrom      /cdrom          iso9660         defaults  1 1 
+none            /proc           proc            defaults  1 1
+/dev/hda1       /dos            msdos           defaults  1 1 
+Çekirdek açılış mesajları içinde
+
+VFS: Mounted root (ext2 filesystem) readonly.
+gibi bir satır göreceksiniz. Sistem açılırken en önce / dosya sistemini mount eder. Bu sayede bu dosya sistemi altında yeralan ve hayati önem taşıyan yazılımlara (fsck, mount gibi) ulaşır. Daha sonra yerel dosya sistemleri ve en son da ağ üzerinden erişilen dosya sistemlerine (NFS) bağlanır. fstab dosyasında kullanıcının kendi dosyalarını yerleştiremediği, fakat sistem tarafından kullanılan swap ve proc dosya sistemleri için de mount bilgileri bulunur.
+
+Yukarıdaki fstab dosyasında ext2 dosya sistemine sahip /dev/hda2 sabit disk bölümü, / dizinini oluşturuyor. MS-DOS formatlı /dev/hda1 bölümü de /dos dizinine erişilebilir olarak açılış anında eklenecektir.
+
+Sistemdeki CD-ROM sürücü /cdrom dizini altına yerleştirilmiş olup root kullanıcı bunu istediği dizine koyabilir. Bu dosyaya, mount komutundaki gibi parametreler de eklenebilir. Dördüncü sırada yeralan defaults parametresinin yanına eklemek istediğiniz opsiyonları yazın. Bu parametrelerden sıkça kullanılan bir tanesi de "user" olup root dışındaki kullanıcılara mount hakkını verir. CD-ROM sürücüyü normal sistem kullanıcılarının mount veya umount yapabilmesi için fstab dosyasındaki ilgili satırı
+
+/dev/cdrom      /cdrom          iso9660                 defaults,user 1 1 
+satırıyla değiştirin. defaults parametresi ise , halihazırdaki dosya sistemini okunup yazılabildiğini, asenkron olduğunu, üzerindeki bilgileri bloklar halinde alıp verdiğini (buna diğer örnekler CD-ROM ve disket sürücülerdir), içerdiği programların çalıştırılabilir olduğunu ve normal kullanıcıların mount, umount yapamadığını gösterir. user parametresiyle kullanıcılara mount ve umount hakkı yukarıda verilmiştir.
+
+Dosya Sistemi Yaratılması ve Kontrolü
+Bazen MS-DOS altından oluşturulamayan dosya sistemlerini (ext2 gibi) oluşturmak gerekebilir. Linux altında bir dosya sistemini oluştururken aynı zamanda bunu kontrol eden programlar vardır. Bunların en çok kullanılanı, Slackware sürümünde gelen mkfs/'tir.
+
+mkfs ile Linux native (ext2) dosya sistemi oluşturmak için mkfs.ext2 programı kullanılır.
+
+mkfs.ext2 <aygit> <blok-sayisi>
+"aygıt" yerine üzerine dosya sistemi kurulacak olan cihazın /dev dizini altındaki düğüm dosyasının ismi yazılır. Blok sayısı yerine, fdisk yazılımından o bölümün kaç blok olduğunu öğrenip bu sayıyı girmelisiniz. Bir blok 1024 bayttan oluşur. Örneğin
+
+# mke2fs /dev/hda3 163829
+komutu, /dev/hda3 disk bölümünde ext2 dosya sistemi kurar. Bu komutu kullanmadan önce iyi düşünün, zira burada yeralan tüm dosyalar silinir ve bu hatanın geri dönüşü olmaz. Aşağıdaki komut ile bir disket üzerinde ext2 dosya sistemi kuruluyor.
+
+# mke2fs /dev/fd0 1440
+mke2fs ile mkfs.ext2 komutları aynıdır. Benzer şekilde, MS-DOS dosya sistemi yaratmak için mkfs.msdos, minix dosya sistemi yaratmak için mkfs.minix kullanılabilir. Blok sayısı girilmez ise mke2fs bunu otomatik olarak bulacaktır.
+
+Herhangi bir sebepten dolayı diskte bozulma ve veri kaybını en aza indirmek için de yazılımlar vardır. fsck ile dosya sistemi kontrolü yapılabilir. fsck ile ext2, dosfsck (veya fsck.msdos) ile MS-DOS formatlı alanlar kontrol edilir.
+
+linux:~# fsck /dev/hda2
+Parallelizing fsck version 0.5b (14-Feb-95)
+e2fsck 0.5b, 14-Feb-95 for EXT2 FS 0.5a, 95/03/19
+/dev/hda2 is mounted.  Do you really want to continue (y/n)? yes
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Fix summary information<y>? yes
+
+Block bitmap differences: -46486 -46487 -46488 -46489 -46490.  FIXED
+Free blocks count wrong for group 5 (2803, counted=2808).  FIXED
+Free blocks count wrong (16326, counted=16331).  FIXED
+
+/dev/hda2: ***** FILE SYSTEM WAS MODIFIED *****
+/dev/hda2: ***** REBOOT LINUX *****
+/dev/hda2: 3494/29632 files, 42904/59235 blocks
+Bir dosya sistemini kontrol etmeden önce okunan bölümü root dosya sisteminden ayırın ve kontrol işleminden sonra bilgisayarı kapatıp tekrar açın.
+
+debugfs programı, dosya sistemi parametrelerini incelemek için kullanılır. Disk üzerine doğrudan erişım yaptığı için dikkatli kullanmalısınız. ext2fs yardımıyla kurtarılamayan bazı dosyalar (özellikle silinmiş dosyalar) debugfs yardımıyla kurtarılabilir.
+
+4.4 Sembolik Bağlantılar
+Bazı durumlarda, bir dosyayı oluşturup bu dosyanın başka bir dosyayı işaret etmesi istenebilir. Genellikle sistem yöneticileri tarafından kullanılan sembolik bağlantı yardımıyla bir dosya veya dizin, bunlara karşılık gelen başka bir dosya veya dizin olarak gösterilir.
+
+Aşağıda bir sembolik bağlantı örneği yeralıyor. Sistem görevlisi, /root dizini altındayken /usr/src/linux dizinine geçmek istiyor. /usr/src/linux dizinine işaret eden bir bağlantı kurmak için ln komutu kullanılır. -s parametresi, bu bağlantının sembolik olacağına işaret eder.
+
+ln -s <nereye-baglanti-yapilacak> <hangi-isimle-yapilacak>
+linux:~# ls -l
+total 116
+drwxr-xr-x   2 root     root         1024 Feb 14 08:13 kernel
+-rw-r--r--   1 root     root       115695 Sep 15  1994 lodlin15.zip
+drwx------   2 root     root         1024 Jan  7  1980 mail
+-rw-r--r--   1 root     root            0 Feb 15 08:14 typescript
+linux:~# ln -s /usr/src/linux linux
+linux:~# ls -l
+total 116
+drwxr-xr-x   2 root     root         1024 Feb 14 08:13 kernel
+-rw-r--r--   1 root     root       115695 Sep 15  1994 lodlin15.zip
+drwx------   2 root     root         1024 Jan  7  1980 mail
+lrwxrwxrwx   1 root     root            9 Feb 15 08:14 linux -> /usr/src/linux
+-rw-r--r--   1 root     root            0 Feb 15 08:14 typescript
+Bu işlemden sonra kullanıcının /usr/src/linux dizinine geçmesi için cd linux" yazması yetecektir. Sembolik bağlantı dosyasını diğerlerinden ayıran, satırın en solundaki l karakteridir.
+
+4.5 Dosya Arşivleme ve Sıkıştırma
+Linux altında dosya arşivlenmesi ve sıkıştırılması neredeyse belirli ve standartlaşmış birkaç komut ile gerçekleştiriliyor. tar komutu yardımıyla istenilen dosyaları arşivleyebilir, bunların üzerine yenilerini ekleyebilir, istediğiniz zaman da tekrar açıp eski haline getirebilirsiniz. GNU gzip komutu ise dosyaların sıkıştırılması (zip) ve sıkıştırılmış dosyaların açılması (unzip) işlemlerini yapabiliyor. Fazla disk alanınız yoksa bu iki komut her zaman yardımınıza koşacaktır.
+
+Dosya Arşivleme
+tar (Tape ARchive) programı, bir veya birden fazla dosyayı tek bir forma sokar. Genellikle bir dizin ve bu dizinin altında yer alan tüm alt dizinleri biraraya getirmek için kullanılır. tar, dosyaların üzerinde sıkıştırma işlemini normalde uygulamaz. Fakat tar'ın GNU sürümü (Linux'ta da kullanılan) bu işlemi gzip kullanmadan da yapabiliyor.
+
+tar komutuna bir örnek verelim :
+
+$ tar -cf arsiv.tar tmp/
+Bu komut, -c (create archive) parametresi yardımıyla tmp dizini altındaki herşeyi paketleyip arsiv.tar isimli dosyaya yollar. -f parametresi, hangi dosyaya yazılacağını belirtir. İstediğiniz zaman dosyayı tekrar açmak isterseniz :
+
+$ tar -xf arsiv.tar 
+komutunu kullanın. -x (extract) parametresi, -f ile belirtilen dosyayı açacaktır.
+
+-r opsiyonu ile daha önce yaratılmış bir arşive dosya eklenebilir. Böylece dosyayı açma ve tekrar arşiv oluşturma işleminden kurtulmuş olursunuz.
+
+$ tar -rf arsiv.tar ekleme.txt
+Dosyanın içeriğini önceden görebilmek için -t parametresini kullanın ve bu işlemi de alışkanlık haline getirin. Bazı durumlarda arşivlenmiş yazılım, kendine ait bir dizin açmak yerine içerdiği dosyaları bulunduğu yere yazabilir.
+
+tar -tf arsiv.tar 
+Hangi dosyaların açıldığını ekranda görebilmek için -v parametresini ekleyin:
+
+# tar -zcvf tmp.tgz /tmp
+tar: Removing leading / from absolute path names in the archive.
+tmp/
+tmp/tar-error
+tmp/.X11-unix/
+tmp/rc.inet1.OLD
+tmp/networks.OLD
+tmp/linux/
+tmp/linux/fss.txt
+tmp/lilo.conf
+tmp/PKGTOOL.REMOVED
+Aşağıdaki komut, arşivlenen dosyaları diskete kaydetmeye yarıyor. Bunun için temiz bir disketi yuvasına yerleştirin ve aşağıdaki satırı yazın.
+
+# tar -cf /dev/fd0 tmp/ 
+tmp dizini altındaki herşeyi diskete kaydetmiş olduk. Açmak için bilinen yöntemi kullanırız :
+
+# tar -xf /dev/fd0
+Dosya Sıkıştırma ve Açma
+Dosya sıkıştırma amacıyla sıkça kullanan iki yazılım vardır : gzip ve compress. Her iki yazılım da Slackware Linux dağıtımında bulunuyor. GNU'nun dağıtımı olan gzip, tar ile birlikte kullanılan ve dosya sıkıştırma ve arşivlemede neredeyse standart haline gelmiş bir program. Bir dosyayı sıkıştırmak için parametre girmeden gzip komutunun ardından dosya ismini yazın.
+
+$ gzip elvis
+$ ls -al 
+elvis.gz
+gzip ile sıkıştırılmış dosyaların sonu .gz ile biter. Bunları açmak için gunzip komutunu kullanın:
+
+$ gunzip elvis.gz
+compress ve uncompress de sırayla bir dosyayı sıkıştırmak ve açmak için kullanılır. Aslında Linux'ta uncompress adında bir yazılım yoktur, bu dosya ismi compress dosyasına bağlantılıdır. compress ile sıkıştırılan dosyaların sonu .Z ile biter.
+
+$ ls -al web.html
+-rw-r--r--   1 gorkem   users       41450 Jan 27 13:40 web.html
+$ compress web.html
+$ ls -al web.html.Z
+-rw-r--r--   1 gorkem   users       18906 Jan 27 13:40 web.html.Z
+Yukarıdaki web.html dosyasını sıkıştırdığımızda dosyanın boyutu 41450 bayttan 18906 bayta indi. Açmak için:
+
+$ uncompress web.html.Z
+Bir dosyanın uzantısından ne tür bir dosya olduğunu anlayamazsanız file komutu imdadınıza koşar. Linux'ta belirli uzantılı dosyaların başı bilinen bir harf veya harf grubu ile başlar. file komutu dosyanın başındaki karakterleri kontrol ederek ve bunları bir listeyle (/etc/magic) karşılaştırarak dosyanın ne tür olduğunu söyler.
+
+# file tmp.gz
+tmp.tgz: gzip compressed data - deflate method , last modified: Sat Feb 15 08:21:50 1997 os: Unix
+# file tmp.tar.Z
+tmp.tar.Z: compressed data 16 bits
+Birlikte Kullanım
+ftp adreslerinde Linux için yeralan yazılımlar genellikle tar ve gzip, nadiren de tar ve compress ile sıkıştırılıp arşivelenerek saklanırlar. Çünkü tar komutu tek başına arşivi sıkıştırmaz, bu işlem için gzip veya compress kullanılır. Bunların açılabilmesi için tar komutu ve birkaç parametre yeterli olur.
+
+$ ls  
+netscape-4.0.linux-elf.tar.gz
+Yukarıdaki dosya önce tar ile arşivlenmiş, ardından gzip ile sıkıştırılmış. Tek adımda bu iki dosyayı açmak için tar dosyasına x ve f parametrelerinin dışında z parametresini de ekleyin :
+
+$ tar -zxf netscape-4.0.linux-elf.tar.gz
+$ ls 
+netscape-4.0.linux-elf
+Eğer dosya sıkıştırılırken compress komutu kullanılmışsa z yerine Z parametresini yazın.
+
+$ ls 
+folder.tar.Z
+$ tar -Zxf folder.tar.Z
+$ ls 
+folder
+Benzer şekile, bir dosyayı aynı anda hem tar ile arşivlemek, hem de sıkıştırmak istersek c ve f parametreleri dışında compress ile Z, gzip ile z parametrelerini girmek yeterlidir. Aşağıda sırayla gn-gopher dizisinin önce tar ve gzip ile, ardından tar ve compress ile arşivlenmesi görülüyor.
+
+$ ls
+gn-gopher/ 
+$ tar -zcf gopher.tgz gn-gopher/
+$ tar -Zcf gopher.tar.Z gn-gopher/ 
+4.6 Dizin Tarama
+Linux işletim sistemini ilk kurduğunuz anda, yüzlerce dizin altında binlerce dosyanız olacaktır. find komutu, bu dosyaların arasında tarama yapabilmek için geliştirilmiştir. Bu komutla sadece dosya isimlerine değil, dosyanın sahibi, erişim hakları, son erişim tarihi gibi verilere de ulaşmak mümkündür. find komutunun en sık kullanış şekli şudur :
+
+find <dizin-ismi> -name <ne-aratiliyor>
+dizin-ismi yerine taranacak olan dosyanın bulunduğu dizin ismi yazılır. -name parametresinden sonra ise aranan dosyanın ismini girin. Burada "*" ve "?" gibi joker karakterlerini de kullanabilirsiniz. (Bu gibi özel karakterler hakkında daha geniş bilgi Bash kabuğu konusu altında bulunabilir)
+
+Aşağıda, find komutunun kullanımına ilişkin birkaç örnek yeralıyor.
+
+$ find . -name "*.html"         
+(bulundugunuz dizinden itibaren sonu .html ile biten dosyalari arar)
+$ find /home/halil -name "screen" 
+(/home/halil dizininden itibaren screen isimli dosyalari arar)
+Bu komut, -type d parametresi yardımıyla sadece dizin isimleri arasında arama yapar.
+
+$ find /usr/ -name "linux" -type d 
+find komutuna bir alternatif olan locate komutu ile dosyalar çok kısa bir sürede taranabiliyor. update komutu, her sabah belirli bir saatte sistemdeki tüm dosya ve dizin isimlerini bir veri tabanına yükler. Daha sonra bu dosyada yeralan belirli bir dosya veya dizin ismini locate ile arayabilirsiniz:
+
+# locate pico
+/usr/bin/pico
+/usr/man/man1/pico.1.gz
+Yukarıdaki komut ile içinde pico kelimesi geçen dosyaları bulduk.
+
+4.7 mtools MSDOS Arabirimi
+Linux altından, MS-DOS formatlı disketlere ulaşmayı kolaylaştıran paketin ismi mtools olarak biliniyor. Bu isim, paketin tüm komutlarının ilk harfinin "m" olmasından kaynaklanmış. Paketle birlikte gelen çeşitli yardımcı programlar sayesinde MS-DOS formatlı diskette yeralan dosyalar listelenebilir, silinebilir, disket formatlanabilir, hatta disketin kimliği değiştirilebilir.
+
+Son çıkan mtools paketi, 2MB formatlı disketleri de tanıyabiliyor. Aşağıda, mtools paketinden çıkan bazı komutlar ve örnek kullanımları gösteriliyor.
+
+mdir : disketin içeriğini görüntüler.
+
+linux:~# mdir a:
+ Volume in drive A is SYSTEM_BT  
+ Directory for A:/
+
+IO       SYS       40566    9-30-93   6:20a
+MSDOS    SYS       38138    9-30-93   6:20a
+AUTOEXEC BAT          91    3-29-95  10:23a
+NDD              <DIR>      3-29-95  10:26a
+CHKLIST  MS           81   11-07-96   7:00p
+VGA_45           <DIR>      3-29-95  10:28a
+YARDIM           <DIR>      3-29-95  10:17a
+UTIL             <DIR>      3-29-95  10:17a
+VIRUS            <DIR>      3-29-95  10:17a
+       9 File(s)     291328 bytes free
+linux:~# 
+mcopy : Bir dosyayı Linux'tan diskete, disketten Linux'a aktarır.
+
+linux:~# mcopy a:/autoexec.bat .
+Copying AUTOEXEC.BAT
+mdel : DOS dosyasını siler
+
+mformat : Disketi formatlar.
+
+mmd : Disket üzerinde dizin oluşturur.
+
+MSDOS mtools arabirimi aynı zamanda VFAT tipi uzun dosya isimlerini de ekranda gösterebilir. Eğer dosya ismi, tek bir DOS ismi içine sığmıyorsa ve 8+3 kuralını bozuyorsa uygun bir kısa isim yaratılır.
+
+Bunun yanında mtools'un 2 Mb'lık disketleri okuyabilme özelliği de vardır. mtools paketinin konfigürasyon dosyası /etc/mtools.conf'tur. Bu dosyanın kullanımı için mtools(1) man dosyasından yararlanabilirsiniz.
+
+

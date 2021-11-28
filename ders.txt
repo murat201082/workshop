@@ -1,0 +1,3 @@
+history -c tüm history yi siler
+binary sistemi unutma
+user110 grup110 diğer 110 bunlar permissionları chmod kodu ile ayarlıyorlar iki üzeri 0 iki üzeri1 2 üzeri 2 yanyana koyup rakamlar oluşturuyorlar.
